@@ -122,14 +122,32 @@ SIMPLE_JWT = {
 }
 
 # ─── Documentación API (drf-spectacular) ─────────────────────────────────────
+# SPECTACULAR_SETTINGS = {
+#     'TITLE': 'Restaurante API',
+#     'DESCRIPTION': 'API REST para gestión de restaurante',
+#     'VERSION': '1.0.0',
+#     'SERVE_INCLUDE_SCHEMA': False,
+# }
+
+# restaurant/settings.py
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Restaurante API',
     'DESCRIPTION': 'API REST para gestión de restaurante',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+
+    # ✅ Esto agrega el botón "Authorize" con JWT en Swagger
+    'SECURITY': [{'bearerAuth': []}],
+    'COMPONENTS': {
+        'securitySchemes': {
+            'bearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    },
 }
-
-
 
 
 
