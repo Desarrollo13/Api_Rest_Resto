@@ -15,7 +15,7 @@ class CategoriaViewSet(viewsets.ModelViewSet):
 
 
 class MenuItemViewSet(viewsets.ModelViewSet):
-    queryset = MenuItem.objects.select_related('categoria').filter(disponible=True)
+    queryset = MenuItem.objects.select_related('categoria').filter(disponible=True).order_by('id')
     serializer_class = MenuItemSerializer
 
     def get_permissions(self):

@@ -109,15 +109,16 @@ REST_FRAMEWORK = {
 }
 
 # ─── SimpleJWT ────────────────────────────────────────────────────────────────
+# restaurant/settings.py
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME':  timedelta(hours=8),   # turno laboral típico
+    'ACCESS_TOKEN_LIFETIME':  timedelta(hours=8),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS':  True,   # emite nuevo refresh en cada renovación
-    'BLACKLIST_AFTER_ROTATION': True, # invalida el refresh anterior
+    'ROTATE_REFRESH_TOKENS':  True,
+    'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
 
-    # Incluir datos del usuario en el token
-    'TOKEN_OBTAIN_SERIALIZER': 'apps.users.serializers.CustomTokenObtainPairSerializer',
+    # ✅ Ruta corregida
+    'TOKEN_OBTAIN_SERIALIZER': 'users.api.serializers.CustomTokenObtainPairSerializer',
 }
 
 # ─── Documentación API (drf-spectacular) ─────────────────────────────────────

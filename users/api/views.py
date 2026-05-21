@@ -9,7 +9,7 @@ from .permissions import EsAdministrador
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
-    queryset = Usuario.objects.all()
+    queryset = Usuario.objects.all().order_by('id')
     permission_classes = [permissions.IsAuthenticated, EsAdministrador]
 
     def get_serializer_class(self):

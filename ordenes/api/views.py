@@ -1,12 +1,13 @@
+# ordenes/api/views.py
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from ordenes.models import Orden, ItemOrden
 from .serializers import OrdenSerializer, CrearOrdenSerializer, ItemOrdenSerializer
-from users.api.permissions import EsAdminOGerente, EsCocinero, EsCajero, EsMozo
+from users.api.permissions import EsAdminOGerente, EsCocinero, EsCajero, EsMozo, EsPuedeCrearOrden
 
 class OrdenViewSet(viewsets.ModelViewSet):
-    queryset = Orden.objects.select_related('mesa', 'mozo').prefetch_related('items__menu_item')
+    queryset = Orden.objects.select_related('mesa', 'mozo').prefetch_related('items__menu_item').order_by('id')
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -15,38 +16,43 @@ class OrdenViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'create':
-            # Mozo, cajero, gerente y admin pueden crear órdenes
-            return [permissions.IsAuthenticated()]
+            # ✅ Solo mozo, cajero, gerente y admin pueden crear órdenes
+            return [permissions.IsAuthenticated(), EsPuedeCrearOrden()]
         if self.action == 'destroy':
             return [permissions.IsAuthenticated(), EsAdminOGerente()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user
-        # El mozo solo ve sus propias órdenes
         if user.rol == 'mozo':
             return self.queryset.filter(mozo=user)
         return self.queryset
 
+    def create(self, request, *args, **kwargs):
+        # ✅ Crear con CrearOrdenSerializer pero responder con OrdenSerializer completo
+        serializer = CrearOrdenSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        orden = serializer.save()
+        return Response(
+            OrdenSerializer(orden).data,
+            status=status.HTTP_201_CREATED
+        )
+
     @action(detail=True, methods=['patch'], url_path='estado',
             permission_classes=[permissions.IsAuthenticated])
     def cambiar_estado(self, request, pk=None):
-        """
-        Permite cambiar el estado de una orden según el rol:
-        - Mozo:     abierta → en_cocina
-        - Cocinero: en_cocina → lista
-        - Cajero:   lista → cerrada
-        - Admin/Gerente: cualquier transición
-        """
         orden = self.get_object()
         nuevo_estado = request.data.get('estado')
         user = request.user
 
         TRANSICIONES_PERMITIDAS = {
-            'mozo':     {'en_cocina'},
-            'cocinero': {'lista'},
-            'cajero':   {'cerrada'},
-            'gerente':  {'abierta', 'en_cocina', 'lista', 'cerrada', 'cancelada'},
+            'mozo':          {'en_cocina'},
+            'cocinero':      {'lista'},
+            'cajero':        {'cerrada'},
+            'gerente':       {'abierta', 'en_cocina', 'lista', 'cerrada', 'cancelada'},
             'administrador': {'abierta', 'en_cocina', 'lista', 'cerrada', 'cancelada'},
         }
 

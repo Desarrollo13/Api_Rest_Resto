@@ -29,10 +29,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-
-        # Datos extra dentro del JWT
-        token['rol']        = user.rol
-        token['nombre']     = user.get_full_name()
-        token['email']      = user.email
-
+        token['rol']    = user.rol
+        token['nombre'] = user.get_full_name()
+        token['email']  = user.email
         return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # ✅ Agregar rol directamente en el body de la respuesta
+        data['rol']    = self.user.rol
+        data['nombre'] = self.user.get_full_name()
+        data['email']  = self.user.email
+        return data

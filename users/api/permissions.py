@@ -28,3 +28,9 @@ class EsAdminOGerente(BasePermission):
 class EsMozoOCajero(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.rol in ('mozo', 'cajero')
+
+class EsPuedeCrearOrden(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.rol in (
+            'mozo', 'cajero', 'gerente', 'administrador'
+        )    
