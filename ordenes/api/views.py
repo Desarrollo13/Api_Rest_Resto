@@ -2,9 +2,21 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from ordenes.models import Orden, ItemOrden
-from .serializers import OrdenSerializer, CrearOrdenSerializer, ItemOrdenSerializer
+from ordenes.models import Orden, ItemOrden,Pago
+from .serializers import OrdenSerializer, CrearOrdenSerializer, ItemOrdenSerializer,PagoSerializer, CrearPagoSerializer, ComprobanteSerializer
 from users.api.permissions import EsAdminOGerente, EsCocinero, EsCajero, EsMozo, EsPuedeCrearOrden
+from rest_framework.permissions import BasePermission
+
+class _SoloCajero(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            request.user.rol == 'cajero'
+        )
+
+
+
 
 class OrdenViewSet(viewsets.ModelViewSet):
     queryset = Orden.objects.select_related('mesa', 'mozo').prefetch_related('items__menu_item').order_by('id')
@@ -20,6 +32,8 @@ class OrdenViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated(), EsPuedeCrearOrden()]
         if self.action == 'destroy':
             return [permissions.IsAuthenticated(), EsAdminOGerente()]
+        if self.action == 'pagar':
+            return [permissions.IsAuthenticated(), EsCajero()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
@@ -80,3 +94,39 @@ class OrdenViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(orden=orden)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    @action(detail=True, methods=['post'], url_path='pagar',
+            permission_classes=[permissions.IsAuthenticated,  EsCajero])
+    def pagar(self, request, pk=None):
+        """
+        Registra el pago de una orden y la cierra automáticamente.
+        Solo el cajero puede ejecutar esta acción.
+        """
+        orden = self.get_object()
+
+        serializer = CrearPagoSerializer(
+            data=request.data,
+            context={'orden': orden, 'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        pago = serializer.save()
+
+        return Response(
+            ComprobanteSerializer(pago).data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(detail=True, methods=['get'], url_path='comprobante',
+            permission_classes=[permissions.IsAuthenticated])
+    def comprobante(self, request, pk=None):
+        """
+        Devuelve el comprobante de pago de una orden ya cerrada.
+        """
+        orden = self.get_object()
+
+        if not hasattr(orden, 'pago'):
+            return Response(
+                {'error': 'Esta orden no tiene un pago registrado.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(ComprobanteSerializer(orden.pago).data)
