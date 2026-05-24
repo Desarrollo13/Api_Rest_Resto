@@ -1,5 +1,5 @@
 from django.contrib import admin
-from ordenes.models import Orden,ItemOrden
+from ordenes.models import Orden,ItemOrden,Pago
 
 # Register your models here.
 @admin.register(Orden)
@@ -7,4 +7,8 @@ class OrdenAdmin(admin.ModelAdmin):
     list_display=['mesa','mozo','estado','creada_en','actualizada']
 @admin.register(ItemOrden)
 class ItemOrden(admin.ModelAdmin):
-    list_display=['orden','menu_item','cantidad','nota']    
+    list_display=['orden','menu_item','cantidad','nota']  
+
+@admin.register(Pago)
+class PagoAdmin(admin.ModelAdmin):
+    list_display=['orden','metodo_pago','estado','total','monto_recibido','vuelto','cajero','fecha','referencia']
