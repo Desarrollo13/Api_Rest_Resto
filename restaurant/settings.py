@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "mesas",
     "menu",
     "ordenes",
+    "reportes",
    
 
 ]
