@@ -9,4 +9,4 @@ class MesaAdmin(admin.ModelAdmin):
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):   
-    list_display=['mesa','cliente_nombre','cliente_telefono','fecha_hora','personas','confirmada'] 
+    list_display=['mesa','cliente_nombre','cliente_telefono','fecha_hora','personas','estado','creada_por','notas','creada_en'] 
