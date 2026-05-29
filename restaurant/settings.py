@@ -49,12 +49,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 # ← agregá esto al final del settings.py
+# ✅ Correcto
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',    # desarrollo local
+    'http://localhost:5173',
     'http://localhost:3000',
-    'https://dashboard-restaurante-theta.vercel.app/login',
-
+    'https://dashboard-restaurante-theta.vercel.app',  # sin /login al final
 ]
+
+
 
 CORS_ALLOW_ALL_ORIGINS = False
 
