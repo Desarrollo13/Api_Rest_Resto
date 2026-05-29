@@ -53,7 +53,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',    # desarrollo local
     'http://localhost:3000',
     'https://dashboard-restaurante-theta.vercel.app/login',
-'
+
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
