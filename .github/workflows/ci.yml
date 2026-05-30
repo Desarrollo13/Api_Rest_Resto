@@ -1,0 +1,39 @@
+# .github/workflows/ci.yml
+name: CI — Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests:
+    name: Correr tests Django
+    runs-on: ubuntu-latest
+
+    env:
+      SECRET_KEY: django-insecure-test-key-for-ci
+      DEBUG: True
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DATABASE_URL: ""
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 📦 Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: ✅ Correr tests
+        run: |
+          python manage.py test users.tests mesas.tests menu.tests ordenes.tests reportes.tests --verbosity=2
+
+      - name: 🔍 Verificar sistema
+        run: python manage.py check
